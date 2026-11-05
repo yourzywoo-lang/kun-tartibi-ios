@@ -1,7 +1,10 @@
 name: iOS ilovani yig'ish
 on:
   push:
+    branches: [main]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: macos-15
@@ -29,3 +32,14 @@ jobs:
         with:
           name: KunTartibi-ipa
           path: ios/KunTartibi.ipa
+      - name: IPA faylini "ipa" branchiga joylash
+        run: |
+          cd ios
+          mkdir -p /tmp/out && cp KunTartibi.ipa /tmp/out/
+          cd /tmp/out
+          git init -q -b ipa
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add KunTartibi.ipa
+          git commit -qm "IPA ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" ipa
