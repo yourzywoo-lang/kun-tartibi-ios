@@ -113,7 +113,8 @@ main{max-width:1120px;margin:0 auto;padding-block:8px}
 .now{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:15px 16px;box-shadow:var(--shadow);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 14px;position:relative;overflow:hidden}
 .now::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--kc,var(--accent))}
 .now .t{font-family:var(--display);font-size:20px;font-weight:800;line-height:1.2;min-width:0}
-.now .left{font-family:var(--mono);font-weight:700;font-size:22px;align-self:center;grid-row:1/3;grid-column:2;text-align:right;line-height:1.1}
+.now .left{font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:-.02em;align-self:center;grid-row:1/3;grid-column:2;text-align:right;line-height:1.05;white-space:nowrap;font-variant-numeric:tabular-nums}
+.now .left u{text-decoration:none;font-size:14px;font-weight:700;color:var(--muted);margin-left:3px;letter-spacing:0}
 .now .left small{display:block;font-size:11px;color:var(--muted);font-family:var(--body);font-weight:600}
 .now .nx{font-size:13px;color:var(--muted);min-width:0}
 .bar{grid-column:1/-1;height:5px;border-radius:5px;background:var(--surface2);overflow:hidden;margin-top:10px}
@@ -149,8 +150,9 @@ main{max-width:1120px;margin:0 auto;padding-block:8px}
 .st.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
 .st.qazo{background:color-mix(in srgb,var(--danger) 16%,transparent);color:var(--danger)}
 .edited{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--turq);font-weight:600}
-.jump{position:fixed;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:9;border:0;border-radius:999px;padding:10px 14px;background:var(--fg);color:var(--bg);font-weight:700;font-size:13px;box-shadow:var(--shadow);transition:opacity .25s,transform .25s var(--ease)}
+.jump{position:fixed;left:50%;margin-left:-62px;width:124px;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:9;border:0;border-radius:999px;padding:8px 12px;background:var(--fg);color:var(--bg);font-weight:700;font-size:13px;box-shadow:var(--shadow);transition:opacity .25s,transform .25s var(--ease)}
 .jump.off{opacity:0;transform:translateY(12px);pointer-events:none}
+.pill.missed i{color:var(--muted);opacity:.75}
 
 /* namoz view */
 .streak{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center}
@@ -273,7 +275,7 @@ nav.tabs .badge{position:absolute;top:3px;left:calc(50% + 8px);min-width:8px;hei
   <span class="chip" id="hChip"></span>
 </header>
 <main id="main"></main>
-<button class="jump off" id="jump" type="button">Hozirgi ish ↓</button>
+<button class="jump off" id="jump" type="button">↓ Hozirgi ish</button>
 <nav class="tabs" aria-label="Bo‘limlar"><div class="in" id="tabs">
   <span class="ind" id="tabInd"></span>
   <button type="button" data-v="bugun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Bugun</button>
@@ -573,6 +575,7 @@ function nowT(){const d=new Date(Date.now()+5*3600e3);return {date:C.ymd(d),min:
 const epoch=(ds,min)=>C.parseD(ds).getTime()+(min-300)*60000;
 const niceDate=ds=>{const d=C.parseD(ds);return C.WD[d.getUTCDay()]+", "+d.getUTCDate()+"-"+C.MONTHS[d.getUTCMonth()];};
 const dur=m=>{m=Math.max(0,Math.ceil(m));return m>=60?Math.floor(m/60)+" soat"+(m%60?" "+(m%60)+" daq":""):m+" daq";};
+const durEl=m=>{m=Math.max(0,Math.ceil(m)); const f=[]; const H=Math.floor(m/60),M=m%60; if(H){f.push(String(H),h("u",null,"s"));} if(M||!H){ if(H) f.push(" "); f.push(String(M),h("u",null,"daq")); } return f;};
 const hmLeft=m=>{m=Math.max(0,Math.ceil(m));return Math.floor(m/60)+":"+String(m%60).padStart(2,"0");};
 
 function persist(){
@@ -812,12 +815,12 @@ function updateLive(){
     const np=nextPrayer(t,tm); L.lbl.textContent=p.school?"Maktab kuni":"Dam olish kuni"; L.sun.textContent="↑"+C.fmt(tm.sunrise)+"  ↓"+C.fmt(tm.maghrib);
     L.np.replaceChildren(h("span",null,np.n+"gacha"),h("span",{class:"mono"},hmLeft(np.left)),h("span",{style:"opacity:.8;font-weight:600;font-size:13px"},"· "+C.fmt(np.at)));
     C.PRAYERS.forEach(([k])=>{ const r=L.pillRefs[k], st=prayerState(t.date,k,tm,t.min,true);
-      r.b.className="pill"+(st==="ok"?" ok":st==="qazo"?" qazo":st==="due"?" due":""); r.tm.textContent=C.fmt(tm[k]);
-      r.i.textContent=st==="ok"?"✓ o‘qildi":st==="qazo"?"qazo":st==="due"?"hozir":st==="missed"?"o‘tdi":"keyin"; });
+      r.b.className="pill"+(st==="ok"?" ok":st==="qazo"?" qazo":st==="due"?" due":st==="missed"?" missed":""); r.tm.textContent=C.fmt(tm[k]);
+      r.i.textContent=st==="ok"?"✓ o‘qildi":st==="qazo"?"qazo":st==="due"?"hozir":st==="missed"?"belgila":"keyin"; });
     const tl=timeline(); const cur=tl.items.filter(b=>b.s<=t.min&&t.min<b.e).sort((a,b)=>(b.kind==="namoz")-(a.kind==="namoz"))[0], next=tl.items.find(b=>b.s>t.min);
     if(cur){ L.nowCard.style.setProperty("--kc","var(--k-"+cur.kind+")"); L.nowEy.textContent="Hozir · "+C.fmt(cur.s)+"–"+C.fmt(cur.e); L.nowT_.textContent=cur.title;
-      L.nowLeft.replaceChildren(dur(cur.e-t.min),h("small",null,"qoldi")); L.barI.style.width=Math.min(100,(t.min-cur.s)/Math.max(1,cur.e-cur.s)*100).toFixed(1)+"%"; }
-    else { L.nowCard.style.setProperty("--kc","var(--muted)"); L.nowEy.textContent="Hozir"; L.nowT_.textContent=next?"Bo‘sh vaqt":"Kun tugadi"; L.nowLeft.replaceChildren(next?dur(next.s-t.min):"",h("small",null,next?"keyingisigacha":"")); L.barI.style.width="0"; }
+      L.nowLeft.replaceChildren(...durEl(cur.e-t.min),h("small",null,"qoldi")); L.barI.style.width=Math.min(100,(t.min-cur.s)/Math.max(1,cur.e-cur.s)*100).toFixed(1)+"%"; }
+    else { L.nowCard.style.setProperty("--kc","var(--muted)"); L.nowEy.textContent="Hozir"; L.nowT_.textContent=next?"Bo‘sh vaqt":"Kun tugadi"; if(next) L.nowLeft.replaceChildren(...durEl(next.s-t.min),h("small",null,"keyingisigacha")); else L.nowLeft.replaceChildren(); L.barI.style.width="0"; }
     L.nowNx.textContent=next?("Keyin "+C.fmt(next.s)+" — "+next.title):"Yaxshi dam ol";
     const off=L.isToday?0:(L.isYest?1440:null);
     if(off!==null){ const tm_=t.min+off; let changed=false; L.rows.forEach(r=>{ const past=r._e<=tm_, cur_=r._s<=tm_&&tm_<r._e;
